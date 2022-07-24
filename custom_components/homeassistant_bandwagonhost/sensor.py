@@ -1,15 +1,14 @@
 import logging
+from datetime import timedelta
 
-from homeassistant.helpers.entity import Entity
 import homeassistant.helpers.config_validation as cv
-from homeassistant.const import CONF_MONITORED_CONDITIONS, CONF_NAME, CONF_SCAN_INTERVAL, EVENT_HOMEASSISTANT_START
 import voluptuous as vol
 from homeassistant.components.sensor import PLATFORM_SCHEMA
-import requests
-import json
-
+from homeassistant.const import CONF_MONITORED_CONDITIONS, CONF_NAME, EVENT_HOMEASSISTANT_START
 from homeassistant.core import callback
-from datetime import timedelta
+from homeassistant.helpers.entity import Entity
+
+from .bwh import BWH
 
 _Log = logging.getLogger(__name__)
 DOMAIN = 'homeassistant_bandwagonhost'
@@ -19,11 +18,9 @@ CONF_VEID = 'veid'
 CONF_API_KEY = 'api_key'
 MONITORED_CONDITIONS = {
     'VPS_STATE': ['Vps State', '', 'mdi:cloud-search'],
-    'CURRENT_BANDWIDTH_USED': ['Current Bandwidth Used', '',
+    'CURRENT_BANDWIDTH_USED': ['Current Bandwidth Used', 'GB',
                                'mdi:cloud-tags'],
-    'DISK_USED': ['DISK USED', '', 'mdi:disc'],
-    'RAM_USED': ['RAM USED', '', 'mdi:responsive'],
-    'SWAP_USED': ['SWAP USED', '', 'mdi:responsive'],
+    'DISK_USED': ['DISK USED', 'GB', 'mdi:disc'],
 }
 
 SCAN_INTERVAL = timedelta(seconds=1200)
@@ -37,8 +34,6 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
         vol.All(cv.ensure_list, [vol.In(MONITORED_CONDITIONS)])
 })
 
-API_URL = "https://api.64clouds.com/v1/getLiveServiceInfo?"
-
 
 async def async_setup_platform(hass, config, async_add_entities,
                                discovery_info=None):
@@ -47,23 +42,18 @@ async def async_setup_platform(hass, config, async_add_entities,
     api_key = config.get(CONF_API_KEY)
     sensor_name = config.get(CONF_NAME)
     monitored_conditions = config.get(CONF_MONITORED_CONDITIONS)
-
+    bwh = BWH(veid, api_key)
     sensors = []
-
     for condition in monitored_conditions:
-        sensors.append(BandwagonHostSensor(sensor_name, veid, api_key, condition))
+        sensors.append(BandwagonHostSensor(sensor_name, veid, api_key, condition, bwh))
 
     async_add_entities(sensors)
 
 
 class BandwagonHostSensor(Entity):
 
-    def __init__(self, sensor_name, veid, api_key, condition):
+    def __init__(self, sensor_name, veid, api_key, condition, bwh: BWH):
 
-        if (sensor_name == '搬瓦工状态'):
-            sensor_name = condition.replace('ATTR_', '').replace('_', ' ')
-        else:
-            sensor_name = sensor_name
         self.attributes = {}
         self._state = None
         self._name = sensor_name
@@ -76,7 +66,8 @@ class BandwagonHostSensor(Entity):
         self._condition_name = condition_info[0]
         self._units = condition_info[1]
         self._icon = condition_info[2]
-        self._entity_id = f'{DOMAIN}_{self._veid}_{self._condition}'
+        self.entity_id = f'{DOMAIN}_{self._veid}_{self._condition}'
+        self._bwh = bwh
 
     async def async_added_to_hass(self):
         """Set initial state."""
@@ -111,7 +102,7 @@ class BandwagonHostSensor(Entity):
 
     @property
     def unique_id(self):
-        return self._entity_id
+        return self.entity_id
 
     @property
     def device_state_attributes(self):
@@ -128,25 +119,12 @@ class BandwagonHostSensor(Entity):
         This is the only method that should fetch new data for Home Assistant.
         """
         try:
-            response = requests.get(API_URL + 'veid=' + self._veid + '&api_key=' + self._api_key)
-            json_obj = json.loads(response.text)
-
             if self._condition == 'CURRENT_BANDWIDTH_USED':
-                self._state = str(round(json_obj['data_counter'] / 1024 / 1024 / 1024, 2)) + 'GB/' + str(
-                    round(json_obj['plan_monthly_data'] / 1024 / 1024 / 1024, 0)) + 'GB'
+                self._state = self._bwh.used_bandwidth
             elif self._condition == 'DISK_USED':
-                self._state = str(round(json_obj['ve_used_disk_space_b'] / 1024 / 1024 / 1024, 2)) + 'GB/' + str(
-                    round(json_obj['plan_disk'] / 1024 / 1024 / 1024, 0)) + 'GB'
-            elif self._condition == 'RAM_USED':
-                self._state = str(
-                    round((json_obj['plan_ram'] - json_obj['mem_available_kb'] * 1024) / 1024 / 1024 / 1024,
-                          2)) + 'GB/' + str(round(json_obj['plan_ram'] / 1024 / 1024 / 1024, 0)) + 'GB'
+                self._state = self._bwh.disk_used
             elif self._condition == 'VPS_STATE':
-                self._state = json_obj['ve_status']
-            elif self._condition == 'SWAP_USED':
-                self._state = str(
-                    round((json_obj['swap_total_kb'] - json_obj['swap_available_kb']) / 1024, 2)) + 'MB/' + str(
-                    round(json_obj['swap_total_kb'] / 1024, 0)) + 'MB'
+                self._state = self._bwh.state
             else:
                 self._state = "something wrong"
         except ConnectionError:
