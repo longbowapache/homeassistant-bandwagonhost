@@ -1,6 +1,6 @@
 {
-  "domain": "homeassistant-bandwagonhost",
-  "name": "homeassistant bandwagonhost",
+  "domain": "homeassistant_bandwagonhost",
+  "name": "homeassistant-bandwagonhost",
   "documentation": "https://github.com/lzybetter/homeassistant-bandwagonhost",
   "dependencies": [],
   "codeowners": [],
