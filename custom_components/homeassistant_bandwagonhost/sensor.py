@@ -17,7 +17,7 @@ DEFAULT_NAME = '搬瓦工状态'
 CONF_VEID = 'veid'
 CONF_API_KEY = 'api_key'
 MONITORED_CONDITIONS = {
-    'VPS_STATE': ['Vps State', '', 'mdi:cloud-search'],
+    'VPS_STATE': ['Vps State', None, 'mdi:cloud-search'],
     'CURRENT_BANDWIDTH_USED': ['Current Bandwidth Used', DATA_GIGABYTES,
                                'mdi:cloud-tags'],
     'DISK_USED': ['DISK USED', DATA_GIGABYTES, 'mdi:disc'],
