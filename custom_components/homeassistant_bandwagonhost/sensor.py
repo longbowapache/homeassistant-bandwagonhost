@@ -66,7 +66,7 @@ class BandwagonHostSensor(Entity):
         self._condition_name = condition_info[0]
         self._units = condition_info[1]
         self._icon = condition_info[2]
-        self.entity_id = f'{DOMAIN}_{self._veid}_{self._condition}'
+        self.entity_id = f'{DOMAIN}.{self._veid}_{self._condition}'
         self._bwh = bwh
 
     async def async_added_to_hass(self):
