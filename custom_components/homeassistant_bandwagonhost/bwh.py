@@ -28,7 +28,8 @@ class BWH:
     def update(self):
         with self._lock:
             now_time = now()
-            if self._state_time is None or ((now_time - self._state_time).seconds / 60) > 20:
+            # 5分钟一次
+            if self._state_time is None or ((now_time - self._state_time).seconds) > 290:
                 logging.info("query bwh for data...")
                 state = query_bwh(self._veid, self._api_key)
                 self._state = state

@@ -23,7 +23,7 @@ MONITORED_CONDITIONS = {
     'DISK_USED': ['DISK USED', DATA_GIGABYTES, 'mdi:disc'],
 }
 
-SCAN_INTERVAL = timedelta(seconds=1200)
+SCAN_INTERVAL = timedelta(seconds=300)
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_VEID): cv.string,
