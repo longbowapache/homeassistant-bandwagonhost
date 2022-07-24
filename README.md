@@ -9,7 +9,7 @@
 ## 配置 
 ```yaml
 sensor:
-  - platform: homeassistant-bandwagonhost
+  - platform: homeassistant_bandwagonhost
     veid: 搬瓦工VPS的veid         # 必须
     api_key: 搬瓦工VPS的API_KEY   # 必须
     monitored_conditions:         # 可选
