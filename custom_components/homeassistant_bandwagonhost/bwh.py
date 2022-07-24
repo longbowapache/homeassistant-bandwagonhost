@@ -1,5 +1,6 @@
 import json
 import logging
+import threading
 
 import requests
 from homeassistant.util.dt import now
@@ -21,14 +22,16 @@ class BWH:
         self._state_time = None
         self._veid = veid
         self._api_key = api_key
+        self._lock = threading.Lock()
 
     def update(self):
-        now_time = now()
-        if self._state_time is None or ((now_time - self._state_time).seconds / 60) > 20:
-            logging.info("query bwh for data...")
-            state = query_bwh(self._veid, self._api_key)
-            self._state = state
-            self._state_time = now_time
+        with self._lock:
+            now_time = now()
+            if self._state_time is None or ((now_time - self._state_time).seconds / 60) > 20:
+                logging.info("query bwh for data...")
+                state = query_bwh(self._veid, self._api_key)
+                self._state = state
+                self._state_time = now_time
 
     @property
     def used_bandwidth(self):
