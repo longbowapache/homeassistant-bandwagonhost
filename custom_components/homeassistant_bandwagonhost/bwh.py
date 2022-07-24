@@ -33,6 +33,8 @@ class BWH:
                 state = query_bwh(self._veid, self._api_key)
                 self._state = state
                 self._state_time = now_time
+            else:
+                logging.debug(f"last date update time is {self._state_time}")
 
     @property
     def used_bandwidth(self):
