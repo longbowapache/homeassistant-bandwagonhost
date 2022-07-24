@@ -4,7 +4,7 @@ from datetime import timedelta
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant.components.sensor import PLATFORM_SCHEMA
-from homeassistant.const import CONF_MONITORED_CONDITIONS, CONF_NAME, EVENT_HOMEASSISTANT_START
+from homeassistant.const import CONF_MONITORED_CONDITIONS, CONF_NAME, EVENT_HOMEASSISTANT_START, DATA_GIGABYTES
 from homeassistant.core import callback
 from homeassistant.helpers.entity import Entity
 
@@ -18,9 +18,9 @@ CONF_VEID = 'veid'
 CONF_API_KEY = 'api_key'
 MONITORED_CONDITIONS = {
     'VPS_STATE': ['Vps State', '', 'mdi:cloud-search'],
-    'CURRENT_BANDWIDTH_USED': ['Current Bandwidth Used', 'GB',
+    'CURRENT_BANDWIDTH_USED': ['Current Bandwidth Used', DATA_GIGABYTES,
                                'mdi:cloud-tags'],
-    'DISK_USED': ['DISK USED', 'GB', 'mdi:disc'],
+    'DISK_USED': ['DISK USED', DATA_GIGABYTES, 'mdi:disc'],
 }
 
 SCAN_INTERVAL = timedelta(seconds=1200)
@@ -111,7 +111,7 @@ class BandwagonHostSensor(Entity):
 
     @property
     def unit_of_measurement(self):
-        self._units
+        return self._units
 
     def update(self):
         """Fetch new state data for the sensor.
