@@ -4,5 +4,6 @@
   "documentation": "https://github.com/lzybetter/homeassistant-bandwagonhost",
   "dependencies": [],
   "codeowners": [],
-  "requirements": ["requests"]
+  "requirements": ["requests"],
+  "version": "0.01"
 }
