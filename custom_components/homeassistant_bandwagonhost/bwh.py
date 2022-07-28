@@ -10,8 +10,8 @@ API_URL = "https://api.64clouds.com/v1/getLiveServiceInfo?"
 
 def query_bwh(veid, api_key):
     query_url = API_URL + 'veid=' + veid + '&api_key=' + api_key
-    logging.debug(f"query url: {query_url}")
     response = requests.get(query_url)
+    logging.debug(f"query url: {query_url}, response: {response.text}")
     json_obj = json.loads(response.text)
     return json_obj
 
