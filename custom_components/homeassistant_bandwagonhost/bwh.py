@@ -5,13 +5,15 @@ import threading
 import requests
 from homeassistant.util.dt import now
 
+_LOGGER = logging.getLogger(__name__)
+
 API_URL = "https://api.64clouds.com/v1/getLiveServiceInfo?"
 
 
 def query_bwh(veid, api_key):
     query_url = API_URL + 'veid=' + veid + '&api_key=' + api_key
     response = requests.get(query_url)
-    logging.debug(f"query url: {query_url}, response: {response.text}")
+    _LOGGER.debug(f"query url: {query_url}, response: {response.text}")
     json_obj = json.loads(response.text)
     return json_obj
 
@@ -30,12 +32,12 @@ class BWH:
             now_time = now()
             # 5分钟一次
             if self._state_time is None or (now_time - self._state_time).seconds > 180:
-                logging.info("query bwh for data...")
+                _LOGGER.info("query bwh for data...")
                 state = query_bwh(self._veid, self._api_key)
                 self._state = state
                 self._state_time = now_time
             else:
-                logging.debug(f"last date update time is {self._state_time}")
+                _LOGGER.debug(f"last date update time is {self._state_time}")
 
     @property
     def used_bandwidth(self):
